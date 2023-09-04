@@ -35,6 +35,12 @@ export const run = async () => {
     console.log('--->', PINECONE_NAME_SPACE)
     const index = pinecone.Index(PINECONE_INDEX_NAME); //change to your own index name
 
+    // Clean the store
+    await index.delete1({
+      namespace: PINECONE_NAME_SPACE,
+      deleteAll: true,
+    })
+
     //embed the TXT documents
     await PineconeStore.fromDocuments(docs, embeddings, {
       pineconeIndex: index,

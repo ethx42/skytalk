@@ -1,16 +1,17 @@
 import dotenv from 'dotenv';
-import {ConversationalRetrievalQAChain} from 'langchain/chains';
-import {OpenAI} from 'langchain/llms/openai';
+import {BufferMemory, ChatMessageHistory} from 'langchain/memory';
+import {ChatOpenAI} from 'langchain/chat_models/openai';
+import {SequentialChain} from 'langchain/chains';
+import {makeAssessmentChain} from '../models/chains/assessment/assessment.js';
+import {makeQAChain} from '../models/chains/qa/qaChain.js';
 import {getVectorStore} from '../store.js';
-import {BufferMemory} from "langchain/memory";
 
 dotenv.config();
 
 export async function getLlmResponse(question) {
-
   try {
     const vectorStore = await getVectorStore();
-    const model = await new OpenAI(
+    const model = await new ChatOpenAI(
       { modelName: 'gpt-3.5-turbo', temperature: 0.5 },
       {
         basePath: 'https://oai.hconeai.com/v1',
@@ -22,19 +23,27 @@ export async function getLlmResponse(question) {
       }
     );
 
-    const qaChain = ConversationalRetrievalQAChain.fromLLM(
-      model,
-      vectorStore.asRetriever(),
-      {
-        memory: new BufferMemory({ returnMessages: true, memoryKey: 'chat_history' }),
-        verbose: true,
-      });
+    const memoryBuffer = new BufferMemory({
+      returnMessages: true,
+      memoryKey: 'chat_history',
+      chatHistory: new ChatMessageHistory(),
+      inputKey: "question",
+      outputKey: "text"
+    })
 
-    const result = await qaChain
-      .call({ question })
-      .catch(console.error);
+    const assessmentChain = await makeAssessmentChain(model);
+    const qaChain = await makeQAChain(model, vectorStore, memoryBuffer);
 
-    return result?.text || '';
+    const overAllChain = new  SequentialChain({
+      chains: [assessmentChain, qaChain],
+      inputVariables: ['input'],
+      outputVariables: ['question', 'text'],
+      verbose: true
+    })
+
+    const result = await overAllChain.call({ input: question });
+    return result?.text;
+
   } catch (error) {
     console.log('Unable to create QA chain:', error);
   }
