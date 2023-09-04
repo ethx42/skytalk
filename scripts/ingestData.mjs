@@ -1,7 +1,7 @@
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { PineconeStore } from 'langchain/vectorstores/pinecone';
-import { TextLoader } from 'langchain/document_loaders/fs/text';
+import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE } from '../config/pinecone.js';
 import { pinecone } from '../utils/pineconeClient.js';
@@ -15,7 +15,7 @@ export const run = async () => {
   try {
     /*load raw docs from the all files in the directory */
     const directoryLoader = new DirectoryLoader(filePath, {
-      '.txt': (path) => new TextLoader(path),
+      '.pdf': (path) => new PDFLoader(path),
     });
 
     const rawDocs = await directoryLoader.load();
