@@ -1,4 +1,5 @@
-import { handleMessage } from './services/chatService.js';
+import './integrations/telegram.js';
+import { handleMessage } from './services/chatService';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -15,6 +16,6 @@ export default async function handler(req, res) {
     const response = await handleMessage(message);
     return res.status(200).json(response);
   } catch (err) {
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: `Internal Server Error: ${err}` });
   }
 }
