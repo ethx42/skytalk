@@ -1,10 +1,10 @@
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { PineconeStore } from 'langchain/vectorstores/pinecone';
-import { pinecone } from '../utils/pineconeClient.js';
-import { TextLoader } from 'langchain/document_loaders/fs/text';
-import { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE } from '../config/pinecone.js';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { PineconeStore } from 'langchain/vectorstores/pinecone';
+import { TextLoader } from 'langchain/document_loaders/fs/text';
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE } from '../config/pinecone.js';
+import { pinecone } from '../utils/pineconeClient.js';
 
 /* Name of directory to retrieve your files from
    Make sure to add your TXT files inside the 'docs' folder in the root of the project
@@ -42,7 +42,7 @@ export const run = async () => {
       textKey: 'text',
     });
   } catch (error) {
-    console.log('error', error);
+    console.error('error', error);
     throw new Error('Failed to ingest your data');
   }
 };
